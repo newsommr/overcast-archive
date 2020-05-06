@@ -1,3 +1,7 @@
+Moved to <https://git.alexwlchan.net/?a=summary&p=overcast-downloader>
+
+---
+
 # overcast-downloader
 
 This is a script that lets you download the audio files for every podcast you've listened to in Overcast.
