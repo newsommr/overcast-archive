@@ -1,2 +1,4 @@
 audiofiles
 *.pyc
+*.opml
+*.mp3
