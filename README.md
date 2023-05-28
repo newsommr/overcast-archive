@@ -1,7 +1,8 @@
 ## overcast_archive
 This project downloads podcast episodes from your Overcast export and organizes them into specific folders for each podcast. The downloader checks if an episode has been played before attempting to download it, skipping any episodes that have already been downloaded.
 
-You will need to download your `All data` export from [Overcast's account page](https://overcast.fm/account).
+#### Acknowledgement:
+This is a fork of an original repository created by Alex Chan, located [here](https://github.com/alexwlchan/overcast-downloader). The code has been modified to meet my needs, but the original idea was based on that project.
 
 #### Installation
 
@@ -17,7 +18,9 @@ Install the required dependencies:
 
 `pip install -r requirements.txt`
 
-Move your `overcast.opml` file to the project folder
+You will need to download your `All data` export from [Overcast's account page](https://overcast.fm/account).
+
+Now, move your `overcast.opml` file to the project folder
 
 #### Usage
 
