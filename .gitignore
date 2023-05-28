@@ -2,4 +2,4 @@ audiofiles
 *.pyc
 *.opml
 *.mp3
-podcasts/.DS_Store
+*.DS_Store
