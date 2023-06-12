@@ -1,22 +1,19 @@
 from bs4 import BeautifulSoup
 import requests
 import os
+from datetime import datetime
 
 def download_podcasts(file):
-    if not os.path.exists(file):
+    if not os.path.isfile(file):
         print(f"File '{file}' not found.")
         return
 
-    try:
-        with open(file, 'r') as f:
-            data = f.read()
-    except Exception as e:
-        print(f"Failed to read the file '{file}'. Error: {e}")
-        return
+    with open(file, 'r') as f:
+        data = f.read()
 
     try:
         bs_data = BeautifulSoup(data, "xml")
-    except Exception as e:
+    except AttributeError as e:
         print(f"Failed to parse the file '{file}' as XML. Error: {e}")
         return
 
@@ -59,21 +56,28 @@ def download_podcasts(file):
                     print(f"No URL found for the episode '{episode.get('title', '')}'. Skipping.")
                     continue
 
-                mp3_file = os.path.join(podcast_dir, f"{episode['title']}.mp3")
+                # Format pubDate
+                pub_date = episode.get('pubDate', '')
+                formatted_date = ''
+                try:
+                    dt = datetime.strptime(pub_date, "%Y-%m-%dT%H:%M:%S%z")
+                    formatted_date = dt.strftime('%Y-%m-%d')
+                except ValueError:
+                    print(f"Could not parse date '{pub_date}' for episode '{episode.get('title', '')}'.")
+
+                # Append formatted pubDate to episode title
+                mp3_file = os.path.join(podcast_dir, f"{formatted_date}: {episode['title']}.mp3")
 
                 if not os.path.exists(mp3_file):
                     print(f"Downloading {episode['title']}...")
                     try:
-                        mp3_data = requests.get(mp3_url).content
+                        with requests.get(mp3_url, stream=True) as r:
+                            r.raise_for_status()
+                            with open(mp3_file, 'wb') as f:
+                                for chunk in r.iter_content(chunk_size=8192):
+                                    f.write(chunk)
                     except Exception as e:
                         print(f"Failed to download the episode '{episode['title']}'. Error: {e}")
-                        continue
-
-                    try:
-                        with open(mp3_file, 'wb') as handler:
-                            handler.write(mp3_data)
-                    except Exception as e:
-                        print(f"Failed to write the episode '{episode['title']}' to a file. Error: {e}")
                         continue
                 else:
                     print(f"{episode['title']} already exists. Skipping download.")
