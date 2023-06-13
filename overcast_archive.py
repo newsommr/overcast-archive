@@ -2,6 +2,39 @@ from bs4 import BeautifulSoup
 import requests
 import os
 from datetime import datetime
+import concurrent.futures
+
+def download_episode(episode, podcast_dir):
+    if 'played' in episode.attrs and episode['played'] == '1':
+        mp3_url = episode.get('enclosureUrl', None)
+        if mp3_url is None:
+            print(f"No URL found for the episode '{episode.get('title', '')}'. Skipping.")
+            return
+
+        # Format pubDate
+        pub_date = episode.get('pubDate', '')
+        formatted_date = ''
+        try:
+            dt = datetime.strptime(pub_date, "%Y-%m-%dT%H:%M:%S%z")
+            formatted_date = dt.strftime('%Y-%m-%d')
+        except ValueError:
+            print(f"Could not parse date '{pub_date}' for episode '{episode.get('title', '')}'.")
+
+        # Append formatted pubDate to episode title
+        mp3_file = os.path.join(podcast_dir, f"{formatted_date}: {episode['title']}.mp3")
+
+        if not os.path.exists(mp3_file):
+            print(f"Downloading {episode['title']}...")
+            try:
+                with requests.get(mp3_url, stream=True) as r:
+                    r.raise_for_status()
+                    with open(mp3_file, 'wb') as f:
+                        for chunk in r.iter_content(chunk_size=8192):
+                            f.write(chunk)
+            except Exception as e:
+                print(f"Failed to download the episode '{episode['title']}'. Error: {e}")
+        else:
+            print(f"{episode['title']} already exists. Skipping download.")
 
 def download_podcasts(file):
     if not os.path.isfile(file):
@@ -49,37 +82,7 @@ def download_podcasts(file):
 
         episodes = podcast.find_all('outline')
 
-        for episode in episodes:
-            if 'played' in episode.attrs and episode['played'] == '1':
-                mp3_url = episode.get('enclosureUrl', None)
-                if mp3_url is None:
-                    print(f"No URL found for the episode '{episode.get('title', '')}'. Skipping.")
-                    continue
-
-                # Format pubDate
-                pub_date = episode.get('pubDate', '')
-                formatted_date = ''
-                try:
-                    dt = datetime.strptime(pub_date, "%Y-%m-%dT%H:%M:%S%z")
-                    formatted_date = dt.strftime('%Y-%m-%d')
-                except ValueError:
-                    print(f"Could not parse date '{pub_date}' for episode '{episode.get('title', '')}'.")
-
-                # Append formatted pubDate to episode title
-                mp3_file = os.path.join(podcast_dir, f"{formatted_date}: {episode['title']}.mp3")
-
-                if not os.path.exists(mp3_file):
-                    print(f"Downloading {episode['title']}...")
-                    try:
-                        with requests.get(mp3_url, stream=True) as r:
-                            r.raise_for_status()
-                            with open(mp3_file, 'wb') as f:
-                                for chunk in r.iter_content(chunk_size=8192):
-                                    f.write(chunk)
-                    except Exception as e:
-                        print(f"Failed to download the episode '{episode['title']}'. Error: {e}")
-                        continue
-                else:
-                    print(f"{episode['title']} already exists. Skipping download.")
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            executor.map(download_episode, episodes, [podcast_dir]*len(episodes))
 
 download_podcasts('overcast.opml')
