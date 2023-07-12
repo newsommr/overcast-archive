@@ -34,7 +34,7 @@ def download_episode(episode, podcast_dir):
             except Exception as e:
                 print(f"Failed to download the episode '{episode['title']}'. Error: {e}")
         else:
-            print(f"{episode['title']} already exists. Skipping download.")
+            pass
 
 def download_podcasts(file):
     if not os.path.isfile(file):
@@ -86,3 +86,5 @@ def download_podcasts(file):
             executor.map(download_episode, episodes, [podcast_dir]*len(episodes))
 
 download_podcasts('overcast.opml')
+
+print("Complete.")
