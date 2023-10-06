@@ -2,7 +2,8 @@
 This project downloads podcast episodes from your Overcast export and organizes them into specific folders for each podcast. The downloader checks if an episode has been played before attempting to download it, skipping any episodes that have already been downloaded.
 
 #### Acknowledgement:
-This is a fork of an original repository created by Alex Chan, located [here](https://github.com/alexwlchan/overcast-downloader). The code has been modified to meet my needs, but the original idea was based on that project.
+The idea of this project came from Alex Chan, located [here](https://github.com/alexwlchan/overcast-downloader).
+The code has been written from scratch to meet my needs, but the original idea was based on that project.
 
 #### Installation
 
